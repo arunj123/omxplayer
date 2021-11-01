@@ -9,7 +9,7 @@ INCLUDES+=-I./ -Ilinux -Iffmpeg_compiled/usr/local/include/ -I /usr/include/dbus
 DIST ?= omxplayer-dist
 STRIP ?= strip
 
-SRC=		linux/XMemUtils.cpp \
+SRC=	linux/XMemUtils.cpp \
 		linux/OMXAlsa.cpp \
 		utils/log.cpp \
 		DynamicDll.cpp \
@@ -37,12 +37,14 @@ SRC=		linux/XMemUtils.cpp \
 		KeyConfig.cpp \
 		OMXControl.cpp \
 		Keyboard.cpp \
-		omxplayer.cpp \
 		revision.cpp \
 
-OBJS+=$(filter %.o,$(SRC:.cpp=.o))
+SRC_TEST = $(SRC) testmain.cpp
 
-all: dist
+OBJS+=$(filter %.o,$(SRC:.cpp=.o))
+OBJS_TEST+=$(filter %.o,$(SRC_TEST:.cpp=.o))
+
+all: omxplayer.a omxplayer.bin
 
 %.o: %.cpp
 	@rm -f $@ 
@@ -53,9 +55,9 @@ omxplayer.o: help.h keys.h
 version:
 	bash gen_version.sh > version.h 
 
-omxplayer.bin: version $(OBJS)
-	$(CXX) $(LDFLAGS) -o omxplayer.bin $(OBJS) -lvchiq_arm -lvchostif -lvcos -ldbus-1 -lrt -lpthread -lavutil -lavcodec -lavformat -lswscale -lswresample -lpcre
-	$(STRIP) omxplayer.bin
+omxplayer.bin: version omxplayer.a testmain.o $(OBJS_TEST)
+	$(CXX) $(LDFLAGS) -o omxplayer.bin omxplayer.a testmain.o -lvchiq_arm -lvchostif -lvcos -ldbus-1 -lrt -lpthread -lavutil -lavcodec -lavformat -lswscale -lswresample -lpcre
+#$(STRIP) omxplayer.bin
 
 help.h: README.md Makefile
 	awk '/SYNOPSIS/{p=1;print;next} p&&/KEY BINDINGS/{p=0};p' $< \
@@ -74,9 +76,10 @@ omxplayer.1: README.md
 	curl -F page=@MAN http://mantastic.herokuapp.com 2>/dev/null >$@
 
 clean:
-	for i in $(OBJS); do (if test -e "$$i"; then ( rm $$i ); fi ); done
+	for i in $(OBJS_TEST); do (if test -e "$$i"; then ( rm $$i ); fi ); done
 	@rm -f omxplayer.old.log omxplayer.log
 	@rm -f omxplayer.bin
+	@rm -f omxplayer.a
 	@rm -rf $(DIST)
 	@rm -f omxplayer-dist.tar.gz
 
@@ -85,24 +88,4 @@ ffmpeg:
 	make -f Makefile.ffmpeg
 	make -f Makefile.ffmpeg install
 
-dist: omxplayer.bin omxplayer.1
-	mkdir -p $(DIST)/usr/lib/omxplayer
-	mkdir -p $(DIST)/usr/bin
-	mkdir -p $(DIST)/usr/share/doc/omxplayer
-	mkdir -p $(DIST)/usr/share/man/man1
-	cp omxplayer omxplayer.bin $(DIST)/usr/bin
-	cp COPYING $(DIST)/usr/share/doc/omxplayer
-	cp README.md $(DIST)/usr/share/doc/omxplayer/README
-	cp omxplayer.1 $(DIST)/usr/share/man/man1
-	cp -P ffmpeg_compiled/usr/local/lib/*.so* $(DIST)/usr/lib/omxplayer/
-	cd $(DIST); tar -czf ../$(DIST).tgz *
 
-install:
-	cp -r $(DIST)/* /
-
-uninstall:
-	rm -rf /usr/bin/omxplayer
-	rm -rf /usr/bin/omxplayer.bin
-	rm -rf /usr/lib/omxplayer
-	rm -rf /usr/share/doc/omxplayer
-	rm -rf /usr/share/man/man1/omxplayer.1
