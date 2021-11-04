@@ -44,7 +44,7 @@ SRC_TEST = $(SRC) testmain.cpp
 OBJS+=$(filter %.o,$(SRC:.cpp=.o))
 OBJS_TEST+=$(filter %.o,$(SRC_TEST:.cpp=.o))
 
-all: omxplayer.a omxplayer.bin
+all: omxplayer.bin
 
 %.o: %.cpp
 	@rm -f $@ 
@@ -55,8 +55,8 @@ omxplayer.o: help.h keys.h
 version:
 	bash gen_version.sh > version.h 
 
-omxplayer.bin: version omxplayer.a testmain.o $(OBJS_TEST)
-	$(CXX) $(LDFLAGS) -o omxplayer.bin omxplayer.a testmain.o -lvchiq_arm -lvchostif -lvcos -ldbus-1 -lrt -lpthread -lavutil -lavcodec -lavformat -lswscale -lswresample -lpcre
+omxplayer.bin: version omxplayer.a $(OBJS_TEST)
+	$(CXX) $(LDFLAGS) -o omxplayer.bin testmain.o -lvchiq_arm -lvchostif -lvcos -ldbus-1 -lrt -lpthread -lavutil -lavcodec -lavformat -lswscale -lswresample -lpcre omxplayer.a
 #$(STRIP) omxplayer.bin
 
 help.h: README.md Makefile

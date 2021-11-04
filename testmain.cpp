@@ -54,7 +54,7 @@ struct iOMXPlayer {
     }
 };
 
-int main_(int argc, char *argv[]) {
+int main1(int argc, char *argv[]) {
 
     iOMXPlayer omxplayer1(argv[1]);
     omxplayer1.oply.initialise();
@@ -70,12 +70,11 @@ int main_(int argc, char *argv[]) {
     return 0;
 }
 
-int main_test() {
+int main() {
 
     iOMXPlayer *  omxplayer1 = new iOMXPlayer("/home/pi/dev/isignale/src/res/videos/amazon.mp4");
     omxplayer1->init();
-
-
+    
     iOMXPlayer *  omxplayer2{nullptr};
 
     while( true ) {
@@ -87,19 +86,18 @@ int main_test() {
             delete omxplayer2;
         }
 
-        omxplayer2 = new iOMXPlayer("/home/pi/dev/isignale/src/res/videos/amazon.mp4");
+        omxplayer2 = new iOMXPlayer("/home/pi/dev/isignale/src/res/videos/minion.mp4");
         omxplayer2->init();
 
-        std::this_thread::sleep_for(std::chrono::seconds(36));
-        omxplayer1->oply.close();
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         omxplayer2->oply.startPlayer();
-
+        omxplayer1->oply.close();
         delete omxplayer1;
 
         
-        omxplayer1 = new iOMXPlayer("/home/pi/dev/isignale/src/res/videos/amazon.mp4");
+        omxplayer1 = new iOMXPlayer("/home/pi/dev/isignale/src/res/videos/Sample_video_1__1_.mp4");
         omxplayer1->init();
-        std::this_thread::sleep_for(std::chrono::seconds(36));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
 
         printMemUsage();
     }
